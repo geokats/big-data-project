@@ -37,15 +37,23 @@ class Node(object):
                     return child.find(key[1:])
         return None
 
-    def delete(self):
-        return
+    def delete(self, key):
+        if len(key) == 0:
+            self.value = None
+        else:
+            for child in self.children:
+                if key[0] == child.key:
+                    return child.delete(key[1:])
 
     # def __str__(self):
     #     return
 
 if __name__ == '__main__':
     n = Node("")
-    n.insert("abc", 420)
+    n.insert("abc", 42)
+    n.insert("abc", 22)
     n.insert("abcd", Node(""))
+    print(n.find("abc"))
+    n.delete("abc")
     print(n.find("abc"))
     print(n.find("abcd"))
