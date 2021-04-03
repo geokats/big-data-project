@@ -4,9 +4,8 @@ class Node(object):
     def __init__(self, key, value=None):
         super(Node, self).__init__()
         self.children = []
-        self.value = None
-        self.key = key[0]
-        self.insert(key[1:], value)
+        self.key = key
+        self.value = value
 
     def insert(self, key, value):
         if len(key) == 0:
@@ -14,7 +13,9 @@ class Node(object):
             self.value = value
         elif len(self.children) == 0:
             #If this node has no children create one with the given key and value
-            self.children.append(Node(key, value))
+            newNode = Node(key[0])
+            newNode.insert(key[1:], value)
+            self.children.append(newNode)
         else:
             #If the node already has children, find where the value must go
             for i, child in enumerate(self.children):
@@ -22,15 +23,19 @@ class Node(object):
                     child.insert(key[1:], value)
                     break
                 elif key[0] < child.key:
-                    self.children.insert(i, Node(key, value))
+                    newNode = Node(key[0])
+                    newNode.insert(key[1:], value)
+                    self.children.insert(i, newNode)
                     break
 
     def find(self, key):
         if len(key) == 0:
-            return value
+            return self.value
         else:
-
-        return
+            for child in self.children:
+                if key[0] == child.key:
+                    return child.find(key[1:])
+        return None
 
     def delete(self):
         return
@@ -39,5 +44,8 @@ class Node(object):
     #     return
 
 if __name__ == '__main__':
-    n = Node("abc", 420)
-    print(n)
+    n = Node("")
+    n.insert("abc", 420)
+    n.insert("abcd", Node(""))
+    print(n.find("abc"))
+    print(n.find("abcd"))
