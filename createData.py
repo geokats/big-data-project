@@ -2,6 +2,26 @@ import argparse
 import random
 
 NEST_PROBA = 0.1
+ALPHABET = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h',
+            'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q',
+            'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'
+            ]
+
+def generateValue(keyType, maxLength):
+    """
+    Generates a random value based on the type of the key
+
+    Parameters:
+        keyType (string): can be one of "string", "int" or "float"
+        maxLength (int): the max length of a string value
+    """
+    if keyType == "string":
+        return "".join(random.choices(ALPHABET, k=random.randrange(1, maxLength)))
+    elif keyType == "int":
+        return random.randrange(0, 1000)
+    elif keyType == "float":
+        return round(random.uniform(0, 1000), 2)
+
 
 def createData(keys, nLines, nesting, nKeys, maxLength):
     """
@@ -27,7 +47,7 @@ def createData(keys, nLines, nesting, nKeys, maxLength):
                 for data in createData(keys, 1, nesting-1, nKeys, maxLength):
                     line += data
             else:
-                line += " \"{}\" : {}".format(keyName, keyType)
+                line += " \"{}\" : {}".format(keyName, generateValue(keyType, maxLength))
 
         line += " }"
         yield line
