@@ -39,7 +39,7 @@ def createData(keys, nLines, nesting, nKeys, maxLength):
 
         for key in range(random.randrange(nKeys)):
             if key > 0:
-                line += " ; "
+                line += " ;"
 
             keyName, keyType = random.choice(list(keys.items()))
 
