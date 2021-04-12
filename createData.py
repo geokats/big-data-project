@@ -16,11 +16,12 @@ def generateValue(keyType, maxLength):
         maxLength (int): the max length of a string value
     """
     if keyType == "string":
-        return "".join(random.choices(ALPHABET, k=random.randrange(1, maxLength)))
+        rand_str = "".join(random.choices(ALPHABET, k=random.randrange(1, maxLength)))
+        return "\"{}\"".format(rand_str)
     elif keyType == "int":
         return random.randrange(0, 1000)
     elif keyType == "float":
-        return round(random.uniform(0, 1000), 2)
+        return round(random.uniform(0, 100), 2)
 
 
 def createData(keys, nLines, nesting, nKeys, maxLength):
@@ -35,15 +36,20 @@ def createData(keys, nLines, nesting, nKeys, maxLength):
         maxLength (int): the maximum length of a string value
     """
     for i in range(nLines):
-        line = "\"key{}\" : ".format(i) + "{"
+        #The available_keys list is used to avoid using the same key twice
+        available_keys = random.sample(list(keys.items()), k=len(keys)) #shuffle
 
-        for key in range(random.randrange(nKeys)):
-            if key > 0:
+        line = "\"key{}\" : {{".format(i)
+
+        for j in range(random.randrange(nKeys)):
+            if j > 0:
                 line += " ;"
 
-            keyName, keyType = random.choice(list(keys.items()))
+            keyName, keyType = available_keys.pop()
 
             if nesting > 0 and random.random() < NEST_PROBA:
+                #If nesting is possible, there is a probability of generating a nested value
+                line += " "
                 for data in createData(keys, 1, nesting-1, nKeys, maxLength):
                     line += data
             else:
@@ -79,6 +85,8 @@ if __name__ == '__main__':
         for line in f:
             keyName, keyType = line.split()
             keys[keyName] = keyType
+
+    assert len(keys) > args.m
 
     #Generate data
     for line in createData(keys, args.n, args.d, args.m, args.l):
