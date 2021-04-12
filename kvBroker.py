@@ -12,7 +12,7 @@ if __name__ == '__main__':
     parser.add_argument('-i', required=True, type=str, metavar='dataToIndex',
                         help='a file containing the data to be stored'
                         )
-    parser.add_argument('-k', required=True, type=int, metavar='nKeys',
+    parser.add_argument('-k', required=True, type=int, metavar='replication',
                         help='the replication factor, i.e. how many different servers \
                         will have the same replicated data'
                         )
