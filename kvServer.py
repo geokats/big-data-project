@@ -2,7 +2,6 @@ import argparse
 import socket
 import json
 from trie import Node
-from communication import recvall
 
 stop_cmd = False
 
@@ -39,17 +38,22 @@ if __name__ == '__main__':
         with conn:
             #Receive message
             print(f'{10*"="} Connected to {addr} {10*"="}')
-            data = recvall(conn)
+            data = conn.recv(8192)
             msg = data.decode('utf-8')
             print(msg)
 
             if msg == "STOP":
                 stop_cmd = True
             elif msg.startswith("PUT"):
+                #Parse the data
                 key, values = parseKV(msg[4:])
                 print(f"Adding: {key}:{values}")
+                #Insert data to the trie
                 store.insert(key, values)
-                # conn.sendall(b"OK")
+                #Send verification to kvBroker
+                conn.sendall(b"OK")
+            else:
+                conn.sendall(b"ERROR")
 
 
     #Close socket

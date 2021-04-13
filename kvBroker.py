@@ -1,9 +1,26 @@
 import argparse
 import socket
 import random
-from communication import send_repl
 
+def send_repl(msg, servers, k=1):
+    """
+    Sends the message to random servers with a replication factor k
 
+        Parameters:
+            msg (string): The message to send
+            servers (list): A list of tuples containing ip addresses and ports
+            k (int): The replication factor
+    """
+    for address, port in random.choices(servers, k=k):
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            #Send data
+            s.connect((address, port))
+            s.sendall(msg.encode('utf8'))
+            #Wait for verification
+            reply = s.recv(8192)
+            if not reply == b"OK":
+                print("ERROR: Failure sending data to servers")
+                break
 
 if __name__ == '__main__':
     #Parse arguments
