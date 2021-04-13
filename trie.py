@@ -27,6 +27,12 @@ class Node(object):
                     newNode.insert(key[1:], value)
                     self.children.insert(i, newNode)
                     break
+                elif i == len(self.children) - 1:
+                    #If we reached the end of the loop we must insert at the end
+                    newNode = Node(key[0])
+                    newNode.insert(key[1:], value)
+                    self.children.append(newNode)
+                    break
 
     def find(self, key):
         if len(key) == 0:
