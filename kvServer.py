@@ -1,18 +1,17 @@
 import argparse
 import socket
+import json
+from trie import Node
+from communication import recvall
 
 stop_cmd = False
 
-def recvall(conn):
-    all_data = b""
-    while True:
-        data = conn.recv(4096)
-        if not data:
-            break
-        else:
-            all_data += data
-
-    return all_data
+def parseKV(kv):
+    j = kv.replace(";",",")
+    d = json.loads("{{{}}}".format(j))
+    assert len(d) == 1
+    key, value = list(d.items())[0]
+    return key, value
 
 if __name__ == '__main__':
     #Parse arguments
@@ -25,16 +24,21 @@ if __name__ == '__main__':
                         )
     args = parser.parse_args()
 
+    #Initialize Trie KV Store
+    #The base trie has no value and will contain all the received KVs as tries
+    store = Node(key="server")
+
     #Create and bind socket
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.bind((args.a, args.p))
     s.listen()
 
+    #KeyValue insertion phase
     while not stop_cmd:
         conn, addr = s.accept()
         with conn:
             #Receive message
-            print(f'Connected to {addr}')
+            print(f'{10*"="} Connected to {addr} {10*"="}')
             data = recvall(conn)
             msg = data.decode('utf-8')
             print(msg)
@@ -42,8 +46,10 @@ if __name__ == '__main__':
             if msg == "STOP":
                 stop_cmd = True
             elif msg.startswith("PUT"):
-                entry = msg[4:]
-                print(f"Adding: {entry}")
+                key, values = parseKV(msg[4:])
+                print(f"Adding: {key}:{values}")
+                store.insert(key, values)
+                # conn.sendall(b"OK")
 
 
     #Close socket
