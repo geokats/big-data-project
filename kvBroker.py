@@ -1,5 +1,21 @@
 import argparse
 import socket
+import random
+
+def send_repl(msg, servers, k=1):
+    """
+    Sends the message to random servers with a replication factor k
+
+        Parameters:
+            msg (string): The message to send
+            servers (list): A list of tuples containing ip addresses and ports
+            k (int): The replication factor
+    """
+    for address, port in random.choices(servers, k=k):
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.connect((address, port))
+            s.sendall(msg.encode('utf8'))
+
 
 if __name__ == '__main__':
     #Parse arguments
@@ -25,10 +41,17 @@ if __name__ == '__main__':
             address, port = line.split(" ")
             servers.append((address, int(port)))
 
+    assert len(servers) <= args.k
+
+    #Read data file and send each line to k servers
+    with open(args.i, 'r') as f:
+        for line in f:
+            line = line.rstrip('\n')
+            msg = f"PUT {line}"
+            send_repl(msg, servers, k=1)
+
+    #Send the stop command to all servers
     for address, port in servers:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.connect((address, port))
-            s.sendall(b'Hello, world')
-            data = s.recv(1024)
-
-        print('Received', repr(data))
+            s.sendall(b"STOP")
