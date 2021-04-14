@@ -75,7 +75,24 @@ if __name__ == '__main__':
                 else:
                     reply = f"{key} : {result}".encode('utf-8')
                 conn.sendall(reply)
-            # elif msg.startswith("QUERY"):
+
+            elif msg.startswith("QUERY"):
+                key = msg.lstrip("QUERY ")
+                subkeys = key.split(".")
+                print(subkeys)
+
+                n = store
+                for sk in subkeys:
+                    if n is None:
+                        break
+                    n = n.find(sk)
+                result = n
+                if result is None:
+                    reply = b"NOT FOUND"
+                else:
+                    reply = f"{key} : {result}".encode('utf-8')
+                conn.sendall(reply)
+
             elif msg.startswith("DELETE"):
                 key = msg.lstrip("DELETE ")
                 if store.delete(key):

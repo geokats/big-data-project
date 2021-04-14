@@ -77,6 +77,27 @@ def send_delete(cmd, servers):
 
     return replies
 
+def send_query(cmd, servers):
+    """
+    Sends a QUERY command to all servers and gathers replies
+
+        Parameters:
+            cmd (string): A command starting with QUERY, without any quotation marks
+            servers (list): A list of tuples containing ip addresses and ports
+    """
+    replies = []
+
+    cmd = cmd.encode('utf-8')
+    for address, port in servers:
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.connect((address, port))
+            s.sendall(cmd)
+            #Wait for reply
+            reply = s.recv(8192)
+            replies.append(reply.decode('utf-8'))
+
+    return replies
+
 if __name__ == '__main__':
     #Parse arguments
     parser = argparse.ArgumentParser(description='Distributes data to the servers and handles user commands')
@@ -124,8 +145,10 @@ if __name__ == '__main__':
             cmd = user_cmd.replace('\"','').replace('\'','')
             result = send_get(cmd, servers)
             print(result)
-
-        # elif user_cmd.startswith("QUERY"):
+        elif user_cmd.startswith("QUERY"):
+            cmd = user_cmd.replace('\"','').replace('\'','')
+            result = send_query(cmd, servers)
+            print(result)
         elif user_cmd.startswith("DELETE"):
             cmd = user_cmd.replace('\"','').replace('\'','')
             result = send_delete(cmd, servers)
