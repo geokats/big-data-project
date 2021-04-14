@@ -67,6 +67,8 @@ if __name__ == '__main__':
 
             if msg == "STOP":
                 stop_cmd = True
+            elif msg == "CHECK":
+                conn.sendall(b"OK")
             elif msg.startswith("GET"):
                 key = msg.lstrip("GET ")
                 result = store.find(key)

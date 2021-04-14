@@ -31,10 +31,13 @@ def send_stop(servers):
     """
     for address, port in servers:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            s.connect((address, port))
-            s.sendall(b"STOP")
+            try:
+                s.connect((address, port))
+                s.sendall(b"STOP")
+            except:
+                print(f"WARNING: Server at {address}:{port} is unreachable")
 
-def send_get(cmd, servers):
+def send_get(cmd, servers, k):
     """
     Sends a GET command to all servers and gathers replies
 
@@ -42,22 +45,31 @@ def send_get(cmd, servers):
             cmd (string): A command starting with GET, without any quotation marks
             servers (list): A list of tuples containing ip addresses and ports
     """
+    unreachable = 0
     not_found = 0
     found = []
 
     cmd = cmd.encode('utf-8')
     for address, port in servers:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            s.connect((address, port))
-            s.sendall(cmd)
-            #Wait for reply
-            reply = s.recv(8192)
-            if reply == b"NOT FOUND":
-                not_found += 1
-            else:
-                found.append(reply.decode('utf-8'))
+            try:
+                s.connect((address, port))
+                s.sendall(cmd)
+                #Wait for reply
+                reply = s.recv(8192)
+                if reply == b"NOT FOUND":
+                    not_found += 1
+                else:
+                    found.append(reply.decode('utf-8'))
+            except:
+                unreachable += 1
 
     result = f"{len(found)} servers replied with results, {not_found} servers did not find it"
+    if unreachable > 0:
+        result += f"\n{unreachable} servers were unreachable"
+        if unreachable => k:
+            result += f"\nWARNING: More servers are down than the replication factor, results might not be reliable"
+
     if len(found) > 0:
         for i in range(len(found)):
             #Make sure all servers have the same result
@@ -79,6 +91,17 @@ def send_delete(cmd, servers):
     found = 0
     not_found = 0
 
+    #First check that all servers are up
+    for address, port in servers:
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            try:
+                s.connect((address, port))
+                s.sendall(b"CHECK")
+                reply = s.recv(8192)
+                assert reply == b"OK"
+            except:
+                return "ERROR: Not all servers are reachable, DELETE cannot be executed"
+
     cmd = cmd.encode('utf-8')
     for address, port in servers:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
@@ -93,7 +116,7 @@ def send_delete(cmd, servers):
     result = f"{found} servers found and deleted the key, {not_found} servers did not find it"
     return result
 
-def send_query(cmd, servers):
+def send_query(cmd, servers, k):
     """
     Sends a QUERY command to all servers and gathers replies
 
@@ -101,22 +124,31 @@ def send_query(cmd, servers):
             cmd (string): A command starting with QUERY, without any quotation marks
             servers (list): A list of tuples containing ip addresses and ports
     """
+    unreachable = 0
     not_found = 0
     found = []
 
     cmd = cmd.encode('utf-8')
     for address, port in servers:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            s.connect((address, port))
-            s.sendall(cmd)
-            #Wait for reply
-            reply = s.recv(8192)
-            if reply == b"NOT FOUND":
-                not_found += 1
-            else:
-                found.append(reply.decode('utf-8'))
+            try:
+                s.connect((address, port))
+                s.sendall(cmd)
+                #Wait for reply
+                reply = s.recv(8192)
+                if reply == b"NOT FOUND":
+                    not_found += 1
+                else:
+                    found.append(reply.decode('utf-8'))
+            except:
+                unreachable += 1
 
     result = f"{len(found)} servers replied with results, {not_found} servers did not find it"
+    if unreachable > 0:
+        result += f"\n{unreachable} servers were unreachable"
+        if unreachable => k:
+            result += f"\nWARNING: More servers are down than the replication factor, results might not be reliable"
+
     if len(found) > 0:
         for i in range(len(found)):
             #Make sure all servers have the same result
@@ -170,10 +202,10 @@ if __name__ == '__main__':
             send_stop(servers)
             stop_cmd = True
         elif user_cmd.startswith("GET"):
-            result = send_get(user_cmd, servers)
+            result = send_get(user_cmd, servers, args.k)
             print(result)
         elif user_cmd.startswith("QUERY"):
-            result = send_query(user_cmd, servers)
+            result = send_query(user_cmd, servers, args.k)
             print(result)
         elif user_cmd.startswith("DELETE"):
             result = send_delete(user_cmd, servers)
