@@ -54,11 +54,16 @@ class Node(object):
 
     def delete(self, key):
         if len(key) == 0:
-            self.value = None
+            if self.value != None:
+                self.value = None
+                return True
+            else:
+                return False
         else:
             for child in self.children:
                 if key[0] == child.key:
                     return child.delete(key[1:])
+        return False
 
     def _print(self, key_prefix):
         ret = {}
@@ -95,7 +100,8 @@ if __name__ == '__main__':
     n.insert("la", {"key": 1, "ke": {"foo":100, "empty": {}}})
 
     print(n.find("abc"))
-    n.delete("abc")
+    print(n.delete("abc"))
+    print(n.delete("aabc"))
     print(n.find("abc"))
 
     print(n.find("abcd"))
