@@ -34,6 +34,28 @@ def send_stop(servers):
             s.connect((address, port))
             s.sendall(b"STOP")
 
+def send_get(cmd, servers):
+    """
+    Sends a GET command to all servers and gathers replies
+
+        Parameters:
+            cmd (string): A command starting with GET, without any quotation marks
+            servers (list): A list of tuples containing ip addresses and ports
+    """
+    replies = []
+
+    cmd = cmd.encode('utf-8')
+    for address, port in servers:
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.connect((address, port))
+            s.sendall(cmd)
+            #Wait for reply
+            reply = s.recv(8192)
+            if not reply == b"NOT FOUND":
+                replies.append(reply.decode('utf-8'))
+
+    return replies
+
 if __name__ == '__main__':
     #Parse arguments
     parser = argparse.ArgumentParser(description='Distributes data to the servers and handles user commands')
@@ -77,7 +99,11 @@ if __name__ == '__main__':
         if user_cmd == "STOP":
             send_stop(servers)
             stop_cmd = True
-        # elif user_cmd.startswith("GET"):
+        elif user_cmd.startswith("GET"):
+            cmd = user_cmd.replace('\"','').replace('\'','')
+            result = send_get(cmd, servers)
+            print(result)
+
         # elif user_cmd.startswith("QUERY"):
         # elif user_cmd.startswith("DELETE"):
         else:

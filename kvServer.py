@@ -67,7 +67,14 @@ if __name__ == '__main__':
 
             if msg == "STOP":
                 stop_cmd = True
-            # elif msg.startswith("GET"):
+            elif msg.startswith("GET"):
+                key = msg.lstrip("GET ")
+                result = store.find(key)
+                if result is None:
+                    reply = b"NOT FOUND"
+                else:
+                    reply = f"{key} : {result}".encode('utf-8')
+                conn.sendall(reply)    
             # elif msg.startswith("QUERY"):
             # elif msg.startswith("DELETE"):
             else:
