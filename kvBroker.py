@@ -67,7 +67,7 @@ def send_get(cmd, servers, k):
     result = f"{len(found)} servers replied with results, {not_found} servers did not find it"
     if unreachable > 0:
         result += f"\n{unreachable} servers were unreachable"
-        if unreachable => k:
+        if unreachable >= k:
             result += f"\nWARNING: More servers are down than the replication factor, results might not be reliable"
 
     if len(found) > 0:
@@ -146,7 +146,7 @@ def send_query(cmd, servers, k):
     result = f"{len(found)} servers replied with results, {not_found} servers did not find it"
     if unreachable > 0:
         result += f"\n{unreachable} servers were unreachable"
-        if unreachable => k:
+        if unreachable >= k:
             result += f"\nWARNING: More servers are down than the replication factor, results might not be reliable"
 
     if len(found) > 0:
