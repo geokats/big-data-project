@@ -42,7 +42,8 @@ def send_get(cmd, servers):
             cmd (string): A command starting with GET, without any quotation marks
             servers (list): A list of tuples containing ip addresses and ports
     """
-    replies = []
+    not_found = 0
+    found = []
 
     cmd = cmd.encode('utf-8')
     for address, port in servers:
@@ -51,10 +52,18 @@ def send_get(cmd, servers):
             s.sendall(cmd)
             #Wait for reply
             reply = s.recv(8192)
-            if not reply == b"NOT FOUND":
-                replies.append(reply.decode('utf-8'))
+            if reply == b"NOT FOUND":
+                not_found += 1
+            else:
+                found.append(reply.decode('utf-8'))
 
-    return replies
+    result = f"{len(found)} servers replied with results, {not_found} servers did not find it"
+    if len(found) > 0:
+        for i in range(len(found)):
+            #Make sure all servers have the same result
+            assert found[0] == found[i]
+        result += f"\n{found[0]}"
+    return result
 
 def send_delete(cmd, servers):
     """
@@ -63,8 +72,12 @@ def send_delete(cmd, servers):
         Parameters:
             cmd (string): A command starting with DELETE, without any quotation marks
             servers (list): A list of tuples containing ip addresses and ports
+        Rerurns:
+            result (string): A string summarizing the replies, i.e. how many
+            servers found the key and deleted it.
     """
-    replies = []
+    found = 0
+    not_found = 0
 
     cmd = cmd.encode('utf-8')
     for address, port in servers:
@@ -73,9 +86,12 @@ def send_delete(cmd, servers):
             s.sendall(cmd)
             #Wait for reply
             reply = s.recv(8192)
-            replies.append(reply.decode('utf-8'))
-
-    return replies
+            if reply == b"OK":
+                found += 1
+            elif reply == b"NOT FOUND":
+                not_found +=1
+    result = f"{found} servers found and deleted the key, {not_found} servers did not find it"
+    return result
 
 def send_query(cmd, servers):
     """
@@ -85,7 +101,8 @@ def send_query(cmd, servers):
             cmd (string): A command starting with QUERY, without any quotation marks
             servers (list): A list of tuples containing ip addresses and ports
     """
-    replies = []
+    not_found = 0
+    found = []
 
     cmd = cmd.encode('utf-8')
     for address, port in servers:
@@ -94,9 +111,18 @@ def send_query(cmd, servers):
             s.sendall(cmd)
             #Wait for reply
             reply = s.recv(8192)
-            replies.append(reply.decode('utf-8'))
+            if reply == b"NOT FOUND":
+                not_found += 1
+            else:
+                found.append(reply.decode('utf-8'))
 
-    return replies
+    result = f"{len(found)} servers replied with results, {not_found} servers did not find it"
+    if len(found) > 0:
+        for i in range(len(found)):
+            #Make sure all servers have the same result
+            assert found[0] == found[i]
+        result += f"\n{found[0]}"
+    return result
 
 if __name__ == '__main__':
     #Parse arguments
@@ -138,20 +164,19 @@ if __name__ == '__main__':
     stop_cmd = False
     while not stop_cmd:
         user_cmd = input("Type your command: ")
+        user_cmd = user_cmd.replace('\"','').replace('\'','')
+
         if user_cmd == "STOP":
             send_stop(servers)
             stop_cmd = True
         elif user_cmd.startswith("GET"):
-            cmd = user_cmd.replace('\"','').replace('\'','')
-            result = send_get(cmd, servers)
+            result = send_get(user_cmd, servers)
             print(result)
         elif user_cmd.startswith("QUERY"):
-            cmd = user_cmd.replace('\"','').replace('\'','')
-            result = send_query(cmd, servers)
+            result = send_query(user_cmd, servers)
             print(result)
         elif user_cmd.startswith("DELETE"):
-            cmd = user_cmd.replace('\"','').replace('\'','')
-            result = send_delete(cmd, servers)
+            result = send_delete(user_cmd, servers)
             print(result)
         else:
             print("ERROR: Command not recognized")
