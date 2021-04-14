@@ -56,6 +56,27 @@ def send_get(cmd, servers):
 
     return replies
 
+def send_delete(cmd, servers):
+    """
+    Sends a DELETE command to all servers and gathers replies
+
+        Parameters:
+            cmd (string): A command starting with DELETE, without any quotation marks
+            servers (list): A list of tuples containing ip addresses and ports
+    """
+    replies = []
+
+    cmd = cmd.encode('utf-8')
+    for address, port in servers:
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.connect((address, port))
+            s.sendall(cmd)
+            #Wait for reply
+            reply = s.recv(8192)
+            replies.append(reply.decode('utf-8'))
+
+    return replies
+
 if __name__ == '__main__':
     #Parse arguments
     parser = argparse.ArgumentParser(description='Distributes data to the servers and handles user commands')
@@ -105,6 +126,9 @@ if __name__ == '__main__':
             print(result)
 
         # elif user_cmd.startswith("QUERY"):
-        # elif user_cmd.startswith("DELETE"):
+        elif user_cmd.startswith("DELETE"):
+            cmd = user_cmd.replace('\"','').replace('\'','')
+            result = send_delete(cmd, servers)
+            print(result)
         else:
             print("ERROR: Command not recognized")

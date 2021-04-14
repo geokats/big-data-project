@@ -74,9 +74,14 @@ if __name__ == '__main__':
                     reply = b"NOT FOUND"
                 else:
                     reply = f"{key} : {result}".encode('utf-8')
-                conn.sendall(reply)    
+                conn.sendall(reply)
             # elif msg.startswith("QUERY"):
-            # elif msg.startswith("DELETE"):
+            elif msg.startswith("DELETE"):
+                key = msg.lstrip("DELETE ")
+                if store.delete(key):
+                    conn.sendall(b"OK")
+                else:
+                    conn.sendall(b"NOT FOUND")
             else:
                 conn.sendall(b"ERROR")
 
