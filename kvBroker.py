@@ -148,14 +148,14 @@ if __name__ == '__main__':
             address, port = line.split(" ")
             servers.append((address, int(port)))
 
-    assert len(servers) <= args.k
+    assert len(servers) >= args.k
 
     #Read data file and send each line to k servers
     with open(args.i, 'r') as f:
         for line in f:
             line = line.rstrip('\n')
             msg = f"PUT {line}"
-            send_repl(msg, servers, k=1)
+            send_repl(msg, servers, k=args.k)
 
     #Send the stop command to all servers
     send_stop(servers)

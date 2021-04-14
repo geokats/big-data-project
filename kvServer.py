@@ -82,7 +82,8 @@ if __name__ == '__main__':
 
                 n = store
                 for sk in subkeys:
-                    if n is None:
+                    if not isinstance(n, Node):
+                        n = None
                         break
                     n = n.find(sk)
                 result = n
