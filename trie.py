@@ -60,8 +60,32 @@ class Node(object):
                 if key[0] == child.key:
                     return child.delete(key[1:])
 
-    # def __str__(self):
-    #     return
+    def _print(self, key_prefix):
+        ret = {}
+        cur_key = key_prefix + self.key
+
+        if self.value != None:
+            if isinstance(self.value, Node):
+                ret[cur_key] = str(self.value)
+            else:
+                ret[cur_key] = self.value
+
+        for child in self.children:
+            child_ret, child_ret_str = child._print(cur_key)
+            ret.update(child_ret)
+
+        ret_str = "{"
+        for i, (key, val) in enumerate(ret.items()):
+            if i != 0:
+                ret_str += " ; "
+            ret_str += f"{key} : {val}"
+        ret_str += "}"
+
+        return ret, ret_str
+
+    def __str__(self):
+        ret, ret_str = self._print("")
+        return ret_str
 
 if __name__ == '__main__':
     n = Node("")
@@ -79,3 +103,4 @@ if __name__ == '__main__':
     print(n.find("abcd").find("key2"))
     print(n.find("abcd").find("key3"))
     print(n.find("la").find("ke").find("foo"))
+    print(n)
