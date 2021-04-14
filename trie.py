@@ -92,7 +92,7 @@ if __name__ == '__main__':
     n.insert("abc", 42)
     n.insert("abc", 22)
     n.insert("abcd", {"key1": 1, "key2": "aaa", "key3": 20.2})
-    n.insert("la", {"key": 1, "ke": {"foo":100}})
+    n.insert("la", {"key": 1, "ke": {"foo":100, "empty": {}}})
 
     print(n.find("abc"))
     n.delete("abc")
