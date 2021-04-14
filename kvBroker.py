@@ -11,7 +11,7 @@ def send_repl(msg, servers, k=1):
             servers (list): A list of tuples containing ip addresses and ports
             k (int): The replication factor
     """
-    for address, port in random.choices(servers, k=k):
+    for address, port in random.sample(servers, k=k):
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             #Send data
             s.connect((address, port))
