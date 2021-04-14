@@ -22,6 +22,18 @@ def send_repl(msg, servers, k=1):
                 print("ERROR: Failure sending data to servers")
                 break
 
+def send_stop(servers):
+    """
+    Sends the STOP command to all servers
+
+        Parameters:
+            servers (list): A list of tuples containing ip addresses and ports
+    """
+    for address, port in servers:
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.connect((address, port))
+            s.sendall(b"STOP")
+
 if __name__ == '__main__':
     #Parse arguments
     parser = argparse.ArgumentParser(description='Distributes data to the servers and handles user commands')
@@ -56,7 +68,17 @@ if __name__ == '__main__':
             send_repl(msg, servers, k=1)
 
     #Send the stop command to all servers
-    for address, port in servers:
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            s.connect((address, port))
-            s.sendall(b"STOP")
+    send_stop(servers)
+
+    #Command Interface Loop
+    stop_cmd = False
+    while not stop_cmd:
+        user_cmd = input("Type your command: ")
+        if user_cmd == "STOP":
+            send_stop(servers)
+            stop_cmd = True
+        # elif user_cmd.startswith("GET"):
+        # elif user_cmd.startswith("QUERY"):
+        # elif user_cmd.startswith("DELETE"):
+        else:
+            print("ERROR: Command not recognized")

@@ -3,8 +3,6 @@ import socket
 import json
 from trie import Node
 
-stop_cmd = False
-
 def parseKV(kv):
     j = kv.replace(";",",")
     d = json.loads("{{{}}}".format(j))
@@ -33,6 +31,7 @@ if __name__ == '__main__':
     s.listen()
 
     #KeyValue insertion phase
+    stop_cmd = False
     while not stop_cmd:
         conn, addr = s.accept()
         with conn:
@@ -54,6 +53,26 @@ if __name__ == '__main__':
                 conn.sendall(b"OK")
             else:
                 conn.sendall(b"ERROR")
+
+    #Command phase
+    stop_cmd = False
+    while not stop_cmd:
+        conn, addr = s.accept()
+        with conn:
+            #Receive message
+            print(f'{10*"="} Connected to {addr} {10*"="}')
+            data = conn.recv(8192)
+            msg = data.decode('utf-8')
+            print(msg)
+
+            if msg == "STOP":
+                stop_cmd = True
+            # elif msg.startswith("GET"):
+            # elif msg.startswith("QUERY"):
+            # elif msg.startswith("DELETE"):
+            else:
+                conn.sendall(b"ERROR")
+
 
 
     #Close socket
