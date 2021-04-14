@@ -79,7 +79,6 @@ if __name__ == '__main__':
             elif msg.startswith("QUERY"):
                 key = msg.lstrip("QUERY ")
                 subkeys = key.split(".")
-                print(subkeys)
 
                 n = store
                 for sk in subkeys:
