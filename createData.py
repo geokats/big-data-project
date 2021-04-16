@@ -24,7 +24,7 @@ def generateValue(keyType, maxLength):
         return round(random.uniform(0, 100), 2)
 
 
-def createData(keys, nLines, nesting, nKeys, maxLength):
+def createData(keys, nLines, nesting, nKeys, maxLength, top_key=None):
     """
     Generates syntactically correct data for the KV Broker
 
@@ -34,12 +34,18 @@ def createData(keys, nLines, nesting, nKeys, maxLength):
         nesting (int): the maximum nesting level
         nKeys (int): the maximum number of keys inside each value
         maxLength (int): the maximum length of a string value
+        top_key (string): the top-key to be used for each line, mainly for creating
+            nested keys. If set to None, top-keys in the form of 'key0', 'key1', etc.
+            will be used
     """
     for i in range(nLines):
         #The available_keys list is used to avoid using the same key twice
         available_keys = random.sample(list(keys.items()), k=len(keys)) #shuffle
 
-        line = "\"key{}\" : {{".format(i)
+        if top_key is None:
+            line = "\"key{}\" : {{".format(i)
+        else:
+            line = "\"{}\" : {{".format(top_key)
 
         for j in range(random.randrange(nKeys)):
             if j > 0:
@@ -50,7 +56,7 @@ def createData(keys, nLines, nesting, nKeys, maxLength):
             if nesting > 0 and random.random() < NEST_PROBA:
                 #If nesting is possible, there is a probability of generating a nested value
                 line += " "
-                for data in createData(keys, 1, nesting-1, nKeys, maxLength):
+                for data in createData(keys, 1, nesting-1, nKeys, maxLength, top_key=keyName):
                     line += data
             else:
                 line += " \"{}\" : {}".format(keyName, generateValue(keyType, maxLength))
@@ -86,7 +92,7 @@ if __name__ == '__main__':
             keyName, keyType = line.split()
             keys[keyName] = keyType
 
-    assert len(keys) > args.m
+    assert len(keys) >= args.m
 
     #Generate data
     for line in createData(keys, args.n, args.d, args.m, args.l):
