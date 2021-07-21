@@ -1,5 +1,13 @@
 # Big Data Management Project: Key-Value Store
 
+## Intorduction
+This repository contains a programming assignment implemented for my Big Data Management 
+class, for the MSc Data Science and Information Technologies program at the National and
+Kapodistrian University of Athens.
+
+A description of the assignment and its requirements can be found in the 
+[project.pdf](project.pdf) file.
+
 ## How to run the programs
 
 ### Data Creation
